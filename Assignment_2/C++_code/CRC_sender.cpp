@@ -5,32 +5,41 @@ using namespace std;
 // Function to perform CRC division
 vector<int> crcDivision(vector<int> dividend, vector<int> divisor) {
     int n = divisor.size();
+    int m = dividend.size();
+
+    vector<int> rem(dividend.begin(), dividend.begin() + n);
+
     int curr = n;
-
-    vector<int> rem;
-    for (int i = 0; i < n; i++) {
-        rem.push_back(dividend[i]);
-    }
-
-    while (curr <= dividend.size()) {
+    while (curr < m) {
         if (rem[0] == 1) {
             for (int i = 1; i < n; i++) {
                 rem[i - 1] = rem[i] ^ divisor[i];
             }
         } else {
             for (int i = 1; i < n; i++) {
-                rem[i - 1] = rem[i] ^ 0;
+                rem[i - 1] = rem[i];  // just shift
             }
         }
-        if (curr < dividend.size()) {
-            rem[n - 1] = dividend[curr++];
-        } else {
-            rem.pop_back();
-        }
+        rem[n - 1] = dividend[curr++];
     }
 
-    return rem; // remainder
+    // final step: one last division if leading bit = 1
+    if (rem[0] == 1) {
+        for (int i = 1; i < n; i++) {
+            rem[i - 1] = rem[i] ^ divisor[i];
+        }
+        rem[n - 1] = 0;
+    } else {
+        for (int i = 1; i < n; i++) {
+            rem[i - 1] = rem[i];
+        }
+        rem[n - 1] = 0;
+    }
+
+    rem.erase(rem.begin()); // remove the leading bit
+    return rem; // size = n-1
 }
+
 
 int main() {
     int dwLength, dLength;
