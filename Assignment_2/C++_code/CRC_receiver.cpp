@@ -62,11 +62,12 @@ int main() {
         }
     }
     rem.pop_back();
-    
+    cout<<"Quotient: ";
     for(int q:quotient){
         cout<<q<<" ";
     }
     cout<<endl;
+    cout<<"Remainder: ";
     for(int q:rem){
         cout<<q<<" ";
     }
