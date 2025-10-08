@@ -23,10 +23,7 @@ import time
 from pathlib import Path
 from typing import List, Dict, Any, Tuple
 
-# ----------------------
 # Basic Helpers
-# ----------------------
-
 def check_tool(tool: str) -> bool:
     """Return True if tool is found on PATH."""
     return shutil.which(tool) is not None
@@ -60,10 +57,7 @@ def clone_repo(repo_url: str, dest_dir: str) -> Tuple[bool, str]:
     else:
         return False, err or out or f"git clone failed with code {rc}"
 
-# ----------------------
 # JSON Parsers
-# ----------------------
-
 def parse_gosec(json_text: str) -> List[Dict[str, Any]]:
     try:
         obj = json.loads(json_text)
@@ -153,10 +147,7 @@ def parse_govulncheck(json_text: str) -> list[dict]:
     return parsed
 
 
-# ----------------------
 # Suggestions / Recommendations
-# ----------------------
-
 GOSEC_SUGGESTIONS = {
     "G101": "Avoid hardcoded credentials; use environment variables or a secrets manager.",
     "G102": "Validate network addresses; avoid SSRF-like issues.",

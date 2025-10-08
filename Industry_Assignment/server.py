@@ -48,7 +48,7 @@ def process_instruction(username, instr, amount):
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
     s.listen()
-    print(f"🎮 Gaming Coin Wallet Server running on {HOST}:{PORT}")
+    print(f"Gaming Coin Wallet Server running on {HOST}:{PORT}")
 
     while True:
         conn, addr = s.accept()

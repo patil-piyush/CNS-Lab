@@ -12,21 +12,21 @@ SHOP_ITEMS = {
 }
 
 def main_menu():
-    print("\n🎮 === MAIN MENU ===")
+    print("\n=== MAIN MENU ===")
     print("E - Login as Existing User")
     print("N - Create New User")
     print("X - Exit")
     return input("Choose option: ").strip().upper()
 
 def transaction_menu(username, balance):
-    print(f"\n🎮 Hello, {username}! Balance: {balance} coins")
+    print(f"\nHello, {username}! Balance: {balance} coins")
     print("1. Earn Coins")
     print("2. Buy Item (Shop)")
     print("3. Logout")
     return input("Choose option: ").strip()
 
 def show_shop():
-    print("\n🛒 Welcome to the Shop! Items available:")
+    print("\nWelcome to the Shop! Items available:")
     for key, (name, price) in SHOP_ITEMS.items():
         print(f"{key}. {name} - {price} coins")
 

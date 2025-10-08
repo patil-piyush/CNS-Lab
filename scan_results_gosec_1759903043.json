@@ -1,0 +1,17 @@
+{
+  "repo": "https://github.com/securego/gosec",
+  "timestamp": "2025-10-08 11:27:23",
+  "gosec": {
+    "total": 0,
+    "by_severity": {},
+    "items": []
+  },
+  "staticcheck": {
+    "total": 0,
+    "items": []
+  },
+  "govulncheck": {
+    "total": 0,
+    "items": []
+  }
+}
