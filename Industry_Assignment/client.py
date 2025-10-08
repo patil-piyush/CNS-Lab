@@ -87,9 +87,9 @@ def main():
                     code, value = struct.unpack('>2sH', data)
                     if code == b'BA':
                         balance = value
-                        print(f"✅ Correct! You earned coins. New Balance: {balance} coins")
+                        print(f"Correct! You earned coins. New Balance: {balance} coins")
                     else:
-                        print("❌ Incorrect captcha. No coins awarded.")
+                        print("Incorrect captcha. No coins awarded.")
                     continue  # Return to transaction menu
 
                 elif option == '2':
