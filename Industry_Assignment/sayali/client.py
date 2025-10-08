@@ -22,21 +22,21 @@ TOLL_RATES = {
 INITIAL_BALANCE_DISPLAY = "₹"  # currency symbol for display
 
 def main_menu():
-    print("\n🚗 === FASTag MAIN MENU ===")
+    print("\n=== FASTag MAIN MENU ===")
     print("E - Existing Vehicle (Login)")
     print("N - New Vehicle Registration")
     print("X - Exit")
     return input("Choose option: ").strip().upper()
 
 def fastag_menu(vehicle_id, balance):
-    print(f"\n🚦 Vehicle: {vehicle_id} | Balance: {balance} coins ({INITIAL_BALANCE_DISPLAY}{balance})")
+    print(f"\nVehicle: {vehicle_id} | Balance: {balance} coins ({INITIAL_BALANCE_DISPLAY}{balance})")
     print("1. Recharge FASTag")
     print("2. Pass Toll (choose preset)")
     print("3. Logout")
     return input("Choose option: ").strip()
 
 def show_toll_presets():
-    print("\n💳 Toll Presets:")
+    print("\nToll Presets:")
     for k, (name, price) in TOLL_RATES.items():
         print(f"{k}. {name} - ₹{price}")
 

@@ -36,7 +36,7 @@ def main():
         running = True
         while running:
             # Receive main menu
-            menu_prompt = s.recv(1024).decode()
+            s.recv(1024)  # just to sync with server
             choice = main_menu()
             s.sendall(choice.encode())
             if choice == 'X':
@@ -61,13 +61,37 @@ def main():
             transaction_active = True
             while transaction_active:
                 option = transaction_menu(username, balance)
+
                 if option == '1':
-                    try:
-                        amount = int(input("Enter coins to earn: "))
-                    except ValueError:
-                        print("Invalid input!")
+                    print("\nCaptcha Challenge: Prove you're human to earn coins!")
+                    s.sendall(struct.pack('>2sH', b'CP', 0))
+
+                    # Receive captcha from server
+                    captcha_msg = s.recv(1024).decode()
+                    if not captcha_msg.startswith("CAPTCHA:"):
+                        print("Error: No captcha received.")
                         continue
-                    s.sendall(struct.pack('>2sH', b'CR', amount))
+                    captcha = captcha_msg.split(":")[1]
+                    print(f"Captcha: {captcha}")
+
+                    # Get user answer
+                    user_answer = input("Enter captcha: ").strip()
+                    s.sendall(user_answer.encode())
+
+                    # Receive server response
+                    data = s.recv(4)
+                    if len(data) != 4:
+                        print("Invalid server response")
+                        continue
+
+                    code, value = struct.unpack('>2sH', data)
+                    if code == b'BA':
+                        balance = value
+                        print(f"✅ Correct! You earned coins. New Balance: {balance} coins")
+                    else:
+                        print("❌ Incorrect captcha. No coins awarded.")
+                    continue  # Return to transaction menu
+
                 elif option == '2':
                     show_shop()
                     item_choice = input("Choose item number to buy: ").strip()
@@ -77,16 +101,18 @@ def main():
                     else:
                         print("Invalid choice!")
                         continue
+
                 elif option == '3':
                     s.sendall(struct.pack('>2sH', b'LO', 0))
                     print(f"{username} logged out. Returning to main menu...")
                     transaction_active = False
                     break
+
                 else:
                     print("Invalid option!")
                     continue
 
-                # Receive server response
+                # Receive server response for shop purchase
                 data = s.recv(4)
                 if len(data) != 4:
                     print("Invalid server response")

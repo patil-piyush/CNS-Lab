@@ -2,6 +2,8 @@ import socket
 import struct
 import json
 import os
+import random
+import string
 
 HOST = '127.0.0.1'
 PORT = 5555
@@ -21,6 +23,10 @@ SHOP_ITEMS = {
     "Shield": 300,
     "Legendary Armor": 1000
 }
+
+def generate_captcha(length=5):
+    """Generate a random alphanumeric captcha."""
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
 
 def save_players():
     with open(PLAYER_FILE, 'w') as f:
@@ -56,7 +62,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             print(f"Connected by {addr}")
             try:
                 while True:  # Main menu loop
-                    # Send main menu
                     conn.sendall(b"MAIN_MENU")
                     main_choice = conn.recv(1024).decode().strip().upper()
                     if not main_choice or main_choice == 'X':
@@ -95,9 +100,31 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                         if not data or len(data) != 4:
                             continue
                         instr, amount = struct.unpack('>2sH', data)
-                        if instr == b'LO':  # Logout
+
+                        # Handle captcha request
+                        if instr == b'CP':
+                            captcha = generate_captcha()
+                            conn.sendall(f"CAPTCHA:{captcha}".encode())
+
+                            # Receive captcha answer
+                            answer = conn.recv(1024).decode().strip()
+                            if answer.upper() == captcha.upper():
+                                # Award random coins between 100 and 500
+                                reward = random.randint(100, 500)
+                                code, new_balance = process_instruction(username, b'CR', reward)
+                                conn.sendall(struct.pack('>2sH', code, new_balance))
+                                print(f"{username} passed captcha and earned {reward} coins. New Balance: {new_balance}")
+                            else:
+                                conn.sendall(struct.pack('>2sH', b'ER', 0))
+                                print(f"{username} failed captcha. No reward given.")
+                            continue
+
+                        # Handle logout
+                        if instr == b'LO':
                             print(f"{username} logged out.")
                             break
+
+                        # Handle credit/debit transactions
                         code, new_balance = process_instruction(username, instr, amount)
                         conn.sendall(struct.pack('>2sH', code, new_balance))
                         if code == b'BA':

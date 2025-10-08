@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
 """
 FASTag Server
 - Listens on 127.0.0.1:5555
-- Persistent balances in players.json (vehicle reg -> balance)
+- Persistent balances in users.json (vehicle reg -> balance)
 - Protocol:
   * Handshake (text): MAIN_MENU, USERNAME?/NEW_USERNAME?, welcome messages
   * Transactions (binary 4 bytes): struct.pack('>2sH', instr, amount)
@@ -17,7 +16,7 @@ import os
 
 HOST = '127.0.0.1'
 PORT = 5555
-PLAYER_FILE = 'players.json'
+USER_FILE = 'users.json'
 MAX_BALANCE = 65535
 INITIAL_BALANCE = 1000  # starting balance for new vehicles
 
@@ -29,32 +28,32 @@ TOLL_RATES = {
     "4": ("Multi-axle", 400)
 }
 
-# Load or initialize players data
-if os.path.exists(PLAYER_FILE):
-    with open(PLAYER_FILE, 'r') as f:
-        players = json.load(f)
+# Load or initialize users data
+if os.path.exists(USER_FILE):
+    with open(USER_FILE, 'r') as f:
+        users = json.load(f)
 else:
-    players = {}
+    users = {}
 
-def save_players():
-    """Persist players dict to JSON file."""
-    with open(PLAYER_FILE, 'w') as f:
-        json.dump(players, f)
+def save_users():
+    """Persist users dict to JSON file."""
+    with open(USER_FILE, 'w') as f:
+        json.dump(users, f)
 
 def process_instruction(vehicle_id, instr, amount):
     """Apply CR/DB for vehicle_id. Return (code_bytes, value_int)."""
-    balance = players[vehicle_id]
+    balance = users[vehicle_id]
     if instr == b'CR':  # Recharge
         if balance + amount <= MAX_BALANCE:
             balance += amount
-            players[vehicle_id] = balance
+            users[vehicle_id] = balance
             return b'BA', balance
         else:
             return b'ER', 0
     elif instr == b'DB':  # Toll deduction
         if balance >= amount:
             balance -= amount
-            players[vehicle_id] = balance
+            users[vehicle_id] = balance
             return b'BA', balance
         else:
             return b'ER', 0
@@ -93,19 +92,19 @@ def handle_client(conn, addr):
                     return
                 vehicle_id = uname_bytes.decode().strip()
                 if main_choice == 'E':
-                    if vehicle_id in players:
-                        bal = players[vehicle_id]
+                    if vehicle_id in users:
+                        bal = users[vehicle_id]
                         conn.sendall(f"Welcome back, {vehicle_id}! Balance: {bal} coins (₹{bal})\n".encode())
                         break
                     else:
                         conn.sendall(b"User not found. Try again.")
                 else:  # new registration
-                    if vehicle_id in players:
+                    if vehicle_id in users:
                         conn.sendall(b"Username exists. Try another.")
                     else:
-                        players[vehicle_id] = INITIAL_BALANCE
-                        save_players()
-                        bal = players[vehicle_id]
+                        users[vehicle_id] = INITIAL_BALANCE
+                        save_users()
+                        bal = users[vehicle_id]
                         conn.sendall(f"Account created! Vehicle {vehicle_id} registered. Balance: {bal} coins (₹{bal})\n".encode())
                         break
 
@@ -129,12 +128,12 @@ def handle_client(conn, addr):
                 if code == b'BA':
                     print(f"[TX] {vehicle_id}: {instr.decode()} {amount} => New balance ₹{new_balance}")
                 else:
-                    print(f"[TX] {vehicle_id}: {instr.decode()} {amount} => FAILED (Balance ₹{players[vehicle_id]})")
+                    print(f"[TX] {vehicle_id}: {instr.decode()} {amount} => FAILED (Balance ₹{users[vehicle_id]})")
 
     except Exception as ex:
         print(f"[!] Error with client {addr}: {ex}")
     finally:
-        save_players()
+        save_users()
         try:
             conn.close()
         except Exception:
@@ -148,7 +147,6 @@ def main():
         print(f"FASTag Server running on {HOST}:{PORT}")
         while True:
             conn, addr = s.accept()
-            # Single-threaded: handle client sequentially (suitable for lab)
             handle_client(conn, addr)
 
 if __name__ == "__main__":
