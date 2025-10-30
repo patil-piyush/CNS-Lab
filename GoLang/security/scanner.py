@@ -1,18 +1,3 @@
-#!/usr/bin/env python3
-"""
-go_scanner_py.py
------------------
-Clones a Go repository, runs security and static analysis tools:
-- gosec
-- staticcheck
-- govulncheck
-
-Parses JSON outputs, summarizes results, provides actionable recommendations,
-and saves consolidated results to a timestamped JSON file.
-
-Author: Piyush (improved version)
-"""
-
 import json
 import shutil
 import subprocess
@@ -174,9 +159,7 @@ def suggestion_for_vuln(vuln_id: str) -> str:
         return "Upgrade to a patched version that fixes this CVE."
     return "Check advisory details and update the dependency accordingly."
 
-# ----------------------
 # Summaries
-# ----------------------
 
 def summarize_gosec(issues: List[Dict[str, Any]]) -> Dict[str, Any]:
     print(f"\n1) gosec: {len(issues)} issue(s) found")
@@ -234,9 +217,7 @@ def summarize_govulncheck(findings: List[Dict[str, Any]]) -> Dict[str, Any]:
         })
     return summary
 
-# ----------------------
 # Orchestrator
-# ----------------------
 
 def run_scans_on_repo(repo_url: str, save_json: bool = True) -> Dict[str, Any]:
     tools = ["git", "gosec", "staticcheck", "govulncheck"]
@@ -255,28 +236,28 @@ def run_scans_on_repo(repo_url: str, save_json: bool = True) -> Dict[str, Any]:
 
         print("\nRepository cloned successfully.")
 
-        # --- Gosec ---
+        # Gosec 
         print("\nRunning gosec (JSON)...")
         rc, gosec_out, gosec_err = run(["gosec", "-fmt=json", "./..."], cwd=tmpdir)
         gosec_issues = parse_gosec(gosec_out if gosec_out else "")
         if rc not in (0, 1):
             print("gosec encountered issues:", gosec_err.strip())
 
-        # --- Staticcheck ---
+        # Staticcheck 
         print("\nRunning staticcheck (JSON)...")
         rc, static_out, static_err = run(["staticcheck", "-f=json", "./..."], cwd=tmpdir)
         if rc not in (0, 1):  # 1 = issues found
             print("staticcheck encountered errors:", static_err.strip())
         static_issues = parse_staticcheck(static_out)
 
-        # --- Govulncheck ---
+        # Govulncheck 
         print("\nRunning govulncheck (JSON)...")
         rc, govuln_out, govuln_err = run(["govulncheck", "-json", "./..."], cwd=tmpdir)
         govuln_findings = parse_govulncheck(govuln_out if govuln_out else "")
         if rc not in (0, 1):
             print("govulncheck error:", govuln_err.strip())
 
-        # --- Summaries ---
+        # Summaries 
         gosec_summary = summarize_gosec(gosec_issues)
         static_summary = summarize_staticcheck(static_issues)
         vuln_summary = summarize_govulncheck(govuln_findings)
@@ -296,7 +277,7 @@ def run_scans_on_repo(repo_url: str, save_json: bool = True) -> Dict[str, Any]:
                 json.dump(result, f, indent=2, ensure_ascii=False)
             print(f"\nResults saved to {out_path}")
 
-        # --- Final Summary ---
+        # Final Summary 
         print("\n===== SUMMARY =====")
         print(f"Gosec: {gosec_summary['total']} issue(s)")
         print(f"Staticcheck: {static_summary['total']} issue(s)")
@@ -311,9 +292,7 @@ def run_scans_on_repo(repo_url: str, save_json: bool = True) -> Dict[str, Any]:
         except Exception:
             pass
 
-# ----------------------
 # CLI Entry
-# ----------------------
 
 def main():
     if len(sys.argv) >= 2:

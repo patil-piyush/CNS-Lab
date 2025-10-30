@@ -1,18 +1,3 @@
-#!/usr/bin/env python3
-"""
-go_inspector.py
----------------
-Performs Go code security inspection using:
-- gosec
-- staticcheck
-- govulncheck
-
-The tool clones a target repository, executes each analyzer,
-prints recommendations directly to the console,
-and saves minimal summary data to a single consolidated file.
-
-Author: Friend Version (restructured variant)
-"""
 
 import os
 import sys
@@ -24,9 +9,8 @@ import subprocess
 from pathlib import Path
 from typing import List, Dict, Any
 
-# ==================================================
 # Utility Functions
-# ==================================================
+
 
 def tool_available(tool: str) -> bool:
     """Check if a tool is available in PATH."""
@@ -52,9 +36,7 @@ def git_clone(repo_url: str, dest: str) -> bool:
         print("Git clone failed:", err or out)
         return False
 
-# ==================================================
 # Parsing Helpers
-# ==================================================
 
 def parse_json_output(text: str) -> Any:
     try:
@@ -112,10 +94,8 @@ def parse_govulncheck_output(output: str) -> list[dict]:
     return findings
 
 
-# ==================================================
-# Suggestion Generators
-# ==================================================
 
+# Suggestion Generators
 def suggest_gosec(rule: str) -> str:
     tips = {
         "G101": "Avoid hardcoded credentials; move them to env vars or secrets manager.",
@@ -140,10 +120,7 @@ def suggest_vulnerability(vuln_id: str) -> str:
         return "Apply patched version to mitigate CVE."
     return "Review module advisory and upgrade dependencies."
 
-# ==================================================
 # Main Analyzer Logic
-# ==================================================
-
 def analyze_repo(repo_url: str) -> None:
     required = ["git", "gosec", "staticcheck", "govulncheck"]
     missing = [t for t in required if not tool_available(t)]
@@ -210,10 +187,8 @@ def analyze_repo(repo_url: str) -> None:
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
 
-# ==================================================
-# Entry Point
-# ==================================================
 
+# Entry Point
 def main():
     if len(sys.argv) < 2:
         repo = input("Enter repository URL: ").strip()
